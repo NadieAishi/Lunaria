@@ -33,7 +33,7 @@ console.out(message);
 Lunaria was created not to compete with existing languages, but to play, to express, and to experiment.
 If you're here, it's probably because you enjoy building things that make you feel something — and that’s enough reason to explore Lunaria.
 ---
-🤝 Contributing
+## 🤝 Contributing
 We warmly welcome contributors!
 
 ### Contribution Guidelines
