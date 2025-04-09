@@ -46,7 +46,7 @@ Please be respectful, constructive, and collaborative.
 
 ## Want to help?
 You can:
--Improve the interpreter or parser
+- Improve the interpreter or parser
 -Port Lunaria to other platforms (Android? WebAssembly?)
 - Add new language features (conditions, loops, etc.)
 - Create tutorials or guides
