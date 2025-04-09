@@ -17,8 +17,6 @@ Inspired by VTuber Himemori Luna and built with love.
 - 🧠 Type system (`Text`, `Int`, etc.)
 - 🖋️ Custom DSL for creativity and clarity
 
----
-
 ## 💡 Example
 
 ```lunaria
