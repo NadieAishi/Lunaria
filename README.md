@@ -1,28 +1,23 @@
-# Lunaria Compiler
+# 🌙 Lunaria
 
-**Lunaria** is an expressive, poetic, and elegant programming language designed to be simple, human-friendly, and powerful.
+**Lunaria** is a lightweight interpreted language built in Rust.  
+It was born as a creative and educational experiment that grew into a real compiler with the ability to write, evaluate and even replicate itself.
 
-This compiler was lovingly created by **PrettyJoke** with the vision of bringing a more artistic and intuitive touch to programming.
+> “So far from China, and yet so close to the moon.”  
+> — A metaphor for Lunaria’s goal: simple, elegant, and reachable anywhere.
 
-## Features
+## ✨ Features
 
-- Clear and natural syntax.
-- Built-in support for console I/O, file writing, and shell execution.
-- Designed to run across platforms: Windows, Linux, Android, Mac.
-- It can even clone itself!
+- Clean syntax with human-readable structure
+- Compile and execute instructions like `console.out`, `fs.out`, and more
+- Platform-aware output (Windows `.exe`, Linux/Mac binaries)
+- Experimental support for shell commands
+- Support for mobile (in progress 🚧)
 
-## License
+## 📦 Installation
 
-Lunaria is released under the **GNU AGPLv3** license. This means:
-
-- You can use Lunaria for any purpose, including commercial.
-- You can share and modify the code freely.
-- But **you must release any modifications**, even if Lunaria is used only on private servers or cloud environments.
-
-## Contributions
-
-Contributions are more than welcome! You can submit suggestions, bug reports, or ideas to help shape Lunaria’s future.
-
----
-
-**Built with stubbornness, passion, and a sprinkle of magic.**
+1. Install [Rust](https://www.rust-lang.org/tools/install)
+2. Clone this repo:
+   ```bash
+   git clone https://github.com/NadieAishi/Lunaria
+   cd Lunaria
