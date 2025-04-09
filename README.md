@@ -22,3 +22,27 @@ define greeting::Text := "Hello, ";
 define message::Text := greeting ~ name ~ "!";
 
 console.out(message);
+
+
+## License
+Lunaria is licensed under the GNU Affero General Public License v3.0.
+
+You are free to:
+
+- Use
+
+- Modify
+
+- Share
+
+As long as:
+
+- You share your modifications under the same license
+
+- You do not attempt to privatize or patent its core
+
+## 🧑‍🎤 Author
+Created by PrettyJoke ✨
+A playful rebellion in code, built under moonlight.
+
+“So far from China, yet so close to the moon.”
