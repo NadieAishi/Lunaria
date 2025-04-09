@@ -1,18 +1,23 @@
 # 🌙 Lunaria Compiler
 
-**Lunaria** is a minimalist interpreted programming language that aims to bring elegance, creativity, and simplicity together. It features intuitive syntax, playful expressiveness, and the ability to write and compile programs in a poetic style. Inspired by VTuber Himemori Luna and built with love.
+**Lunaria** is a minimalist interpreted programming language that brings elegance, creativity, and simplicity together. With its intuitive syntax and expressive structure, Lunaria lets you build poetic, powerful programs that feel alive.
+
+Inspired by VTuber Himemori Luna and built with love.
+
+---
 
 ## ✨ Features
 
-- Custom keyword-based syntax with poetic flavor
-- Expression evaluation engine
-- String concatenation via `~`
-- Basic arithmetic support
-- Console output via `console.out(...)`
-- File output via `fs.out(...)`
-- Shell command execution via `shell.run(...)`
-- Platform-aware compilation support (Windows/Linux/Android/macOS)
-- Basic type system (e.g., `Text`, `Int`, etc.)
+- 🌸 Poetic syntax using custom keywords
+- 🧮 Arithmetic and expressions
+- 🧵 String concatenation with `~`
+- 📤 Output with `console.out(...)`
+- 📁 File writing with `fs.out(...)`
+- 🖥️ Platform-aware shell execution with `shell.run(...)`
+- 🧠 Type system (`Text`, `Int`, etc.)
+- 🖋️ Custom DSL for creativity and clarity
+
+---
 
 ## 💡 Example
 
