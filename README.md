@@ -82,4 +82,4 @@ A playful rebellion in code, built under moonlight.
 
 ---
 ## Testing
-After weeks of working on its core, Lunaria it's ready to give her first breath to the world. You can try it online for free without compiling or paying anything. See her on action on her interactive REPL at: [Lunaria Replit](https://replit.com/@NadieRyoki/LunariaREPL)
+After weeks of working on its core, Lunaria it's ready to give her first breath to the world. You can try it online for free without compiling or paying anything. See her on action on her interactive [REPL](https://replit.com/@NadieRyoki/LunariaREPL){:target="_blank"}
