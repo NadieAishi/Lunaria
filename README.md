@@ -55,7 +55,8 @@ Made with love, curiosity, and the magic of Lunaria.
 
 ```txt
 define saludo::Text := "Hello from Lunaria REPL!"
-console.out(saludo)```
+console.out(saludo)
+```
 
 ---
 
