@@ -79,3 +79,7 @@ Created by PrettyJoke ✨
 A playful rebellion in code, built under moonlight.
 
  > “So far from China, yet so close to the moon.”
+
+---
+## Testing
+After weeks of working on its core, Lunaria it's ready to give her first breath to the world. You can try it online for free without compiling or paying anything. See her on action on her interactive REPL at: [Lunaria Replit]:https://replit.com/@NadieRyoki/LunariaREPL
