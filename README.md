@@ -22,3 +22,9 @@
 
 ```bash
 cargo run -- lunaria.lna
+```
+
+Or enter REPL mode:
+```bash
+cargo build
+```
