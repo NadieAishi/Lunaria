@@ -47,6 +47,18 @@ Made with love, curiosity, and the magic of Lunaria.
 
 ---
 
+### 🧪 Try Lunaria in your browser
+
+> **Launch the REPL version of Lunaria** and start experimenting with your code instantly.
+
+[![Run on Replit](https://replit.com/badge/github/NadieRyoki/LunariaREPL)](https://replit.com/@NadieRyoki/LunariaREPL)
+
+```txt
+define saludo::Text := "Hello from Lunaria REPL!"
+console.out(saludo)```
+
+---
+
 ## ⚠️ License
 
 AGPL-3.0. See LICENSE for more details.
