@@ -28,3 +28,17 @@ Or enter REPL mode:
 ```bash
 cargo build
 ```
+
+---
+
+## 📁 File structure
+
+lunaria_compiler/
+├── src/
+│   ├── lexer.rs
+│   ├── parser.rs
+│   ├── interpreter.rs
+│   └── main.rs
+├── lunaria.lna
+├── Cargo.toml
+└── README.md
