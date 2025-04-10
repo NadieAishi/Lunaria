@@ -3,7 +3,7 @@ define code::Text := "fn main() {\n    println!(\"I was written by Lunaria 🌙\
 fs.out("out/lunaria_clone.rs", code);
 console.out("Rust file created at: out/lunaria_clone.rs");
 
-shell.run("rustc out/lunaria_clone.rs -o bin/lunaria_clone");
+shell.run("rustc out/lunaria_clone.rs -o bin/lunaria_clone.exe");
 console.out("Compilation requested...");
 
-shell.run("bin/lunaria_clone");
+shell.run(".\\bin\\lunaria_clone.exe");
