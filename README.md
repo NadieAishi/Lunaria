@@ -54,8 +54,8 @@ Made with love, curiosity, and the magic of Lunaria.
 [![Run on Replit](https://replit.com/badge/github/NadieRyoki/LunariaREPL)](https://replit.com/@NadieRyoki/LunariaREPL)
 
 ```txt
-define saludo::Text := "Hello from Lunaria REPL!"
-console.out(saludo)
+define greet::Text := "Hello from Lunaria REPL!"
+console.out(greet)
 ```
 
 ---
