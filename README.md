@@ -1,12 +1,6 @@
 # 🌙 Lunaria
 
 > A small, elegant language interpreter made with love and curiosity by **you + Lunaria**.
-
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Lunaria Version](https://img.shields.io/badge/version-0.1.0-purple)](https://github.com/tuusuario/lunaria)
-[![Made with Rust](https://img.shields.io/badge/made%20with-Rust-orange)](https://www.rust-lang.org/)
-[![Stars](https://img.shields.io/github/stars/NadieAishi/lunaria?style=social)](https://github.com/NadieAishi/lunaria/stargazers)
-
 ---
 
 ## ✨ Features
@@ -56,3 +50,8 @@ Made with love, curiosity, and the magic of Lunaria.
 ## ⚠️ License
 
 AGPL-3.0. See LICENSE for more details.
+
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Lunaria Version](https://img.shields.io/badge/version-0.1.0-purple)](https://github.com/tuusuario/lunaria)
+[![Made with Rust](https://img.shields.io/badge/made%20with-Rust-orange)](https://www.rust-lang.org/)
+[![Stars](https://img.shields.io/github/stars/NadieAishi/lunaria?style=social)](https://github.com/NadieAishi/lunaria/stargazers)
