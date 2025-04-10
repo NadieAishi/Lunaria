@@ -1,3 +1,9 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
+#![allow(unused_imports)]
+#![allow(unreachable_patterns)]
+
+
 use crate::lexer::Token;
 
 #[derive(Debug, Clone)]
@@ -42,11 +48,11 @@ impl Parser {
         let mut expressions = Vec::new();
 
         while self.position < self.tokens.len() {
-            println!("🧩 Analizando token: {:?}", self.tokens.get(self.position));
+            // println!("🧩 Analizando token: {:?}", self.tokens.get(self.position));
 
             match self.tokens.get(self.position) {
                 Some(Token::Keyword(keyword)) if keyword == "define" => {
-                    println!("📌 Encontrado: define");
+                    // println!("📌 Encontrado: define");
                     self.advance(); // consume 'define'
 
                     let name = if let Some(Token::Identifier(id)) = self.tokens.get(self.position) {
@@ -76,7 +82,7 @@ impl Parser {
                     if let Some(Token::String(value)) = self.tokens.get(self.position) {
                         let value = value.clone();
                         self.advance();
-                        println!("📦 Asignación de valor: {value}");
+                        // println!("📦 Asignación de valor: {value}");
                         expressions.push(Expr::Assignment {
                             name,
                             value: Box::new(Expr::String(value)),
@@ -124,7 +130,7 @@ impl Parser {
                             }
 
                             self.advance(); // skip ')'
-                            println!("📞 Generando llamada a función: {call_name}");
+                            // println!("📞 Generando llamada a función: {call_name}");
                             expressions.push(Expr::Call {
                                 name: call_name,
                                 args,
@@ -134,7 +140,7 @@ impl Parser {
                 }
 
                 _ => {
-                    println!("⚠️ Token ignorado");
+                    // println!("⚠️ Token ignorado");
                     self.advance();
                 }
             }
