@@ -5,6 +5,7 @@ mod interpreter;
 use lexer::Lexer;
 use parser::Parser;
 use interpreter::Interpreter;
+
 use std::env;
 use std::fs;
 
@@ -16,7 +17,7 @@ fn main() {
     }
 
     let filename = &args[1];
-    let contents = fs::read_to_string(filename).expect("Error reading file");
+    let contents = fs::read_to_string(filename).expect("Failed to read file");
 
     let mut lexer = Lexer::new(&contents);
     let tokens = lexer.tokenize();
