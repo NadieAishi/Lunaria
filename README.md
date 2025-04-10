@@ -33,6 +33,7 @@ cargo build
 
 ## 📁 File structure
 
+```text
 lunaria_compiler/
 ├── src/
 │   ├── lexer.rs
@@ -42,3 +43,16 @@ lunaria_compiler/
 ├── lunaria.lna
 ├── Cargo.toml
 └── README.md
+```
+---
+
+## ❤️ Contributing
+
+All ideas, pull requests or feature requests are welcome!
+Made with love, curiosity, and the magic of Lunaria.
+
+---
+
+## ⚠️ License
+
+AGPL-3.0. See LICENSE for more details.
