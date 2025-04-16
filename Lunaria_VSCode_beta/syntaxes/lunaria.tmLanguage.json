@@ -1,0 +1,33 @@
+{
+	"scopeName": "source.lunaria",
+	"name": "Lunaria",
+	"fileTypes": ["lna"],
+	"patterns": [
+	  {
+		"name": "keyword.control.lunaria",
+		"match": "\\b(summon|evoke|define|fn|return|native)\\b"
+	  },
+	  {
+		"name": "storage.type.lunaria",
+		"match": "\\b(void|i32|f64|string|bool)\\b"
+	  },
+	  {
+		"name": "string.quoted.double.lunaria",
+		"match": "\"([^\"\\\\]|\\\\.)*\""
+	  },
+	  {
+		"name": "constant.language.boolean.lunaria",
+		"match": "\\b(true|false)\\b"
+	  },
+	  {
+		"name": "comment.line.poetic.lunaria",
+		"match": "~>.*$"
+	  },
+	  {
+		"name": "comment.block.poetic.lunaria",
+		"begin": "~<",
+		"end": ">~"
+	  }
+	]
+  }
+  
