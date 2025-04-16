@@ -1,0 +1,40 @@
+{
+  "name": "lunaria",
+  "displayName": "Lunaria",
+  "description": "Lunaria is a poetic and minimalist programming language designed for clarity, and elegance. This extension adds syntax highlighting and basic support for .lna files in Visual Studio Code.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.54.0"
+  },
+  "repository": {
+  "type": "git",
+  "url": "https://github.com/NadieAishi/Lunaria"
+},
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "snippets": [
+      {
+        "language": "lunaria",
+        "path": "./snippets/lunaria.code-snippets"
+      }
+    ],
+  "languages": [
+    {
+      "id": "lunaria",
+      "aliases": ["Lunaria", "lunaria"],
+      "extensions": [".lna"],
+      "configuration": "./language-configuration.json"
+      
+    }
+  ],
+  "grammars": [
+    {
+      "language": "lunaria",
+      "scopeName": "source.lunaria",
+      "path": "./syntaxes/lunaria.tmLanguage.json"
+    }
+  ]
+  }
+}
