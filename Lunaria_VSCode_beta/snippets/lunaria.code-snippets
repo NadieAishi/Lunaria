@@ -1,0 +1,57 @@
+{
+  "Function Declaration": {
+    "prefix": "fn",
+    "body": [
+      "fn ${1:name}(${2:args})${3: : type} {",
+      "    $0",
+      "}"
+    ],
+    "description": "Declare a function in Lunaria"
+  },
+  "Define Variable": {
+    "prefix": "define",
+    "body": [
+      "define ${1:name}::${2:type} := ${3:value};"
+    ],
+    "description": "Define a typed variable"
+  },
+  "Summon Module": {
+    "prefix": "summon",
+    "body": [
+      "summon ${1:module} {",
+      "    $0",
+      "}"
+    ],
+    "description": "Create a module"
+  },
+  "Evoke Module": {
+    "prefix": "evoke",
+    "body": [
+      "evoke ${1:module};"
+    ],
+    "description": "Import a module"
+  },
+  "Console Output": {
+    "prefix": "console.out",
+    "body": [
+      "console.out(${1:message});"
+    ],
+    "description": "Print to console"
+  },
+  "Single Line Comment": {
+    "prefix": "comment",
+    "body": [
+      "~> $0"
+    ],
+    "description": "Poetic single-line comment"
+  },
+  "Block Comment": {
+    "prefix": "block-comment",
+    "body": [
+      "~<",
+      "  $0",
+      ">~"
+    ],
+    "description": "Poetic block comment"
+  }
+}
