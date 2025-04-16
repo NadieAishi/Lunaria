@@ -1,70 +1,58 @@
 #![allow(dead_code)]
-#![allow(unused_variables)]
 #![allow(unused_imports)]
 #![allow(unreachable_patterns)]
 
+use std::env;
+use std::fs;
+use std::io;
 
+mod ast;
 mod lexer;
 mod parser;
 mod interpreter;
+mod grimoire;
+mod builtins;
+mod repl;
 
 use lexer::Lexer;
 use parser::Parser;
 use interpreter::Interpreter;
-
-use std::env;
-use std::fs;
-use std::io::{self, Write};
-
-fn run_file(filename: &str) {
-    let contents = fs::read_to_string(filename)
-        .expect("❌ No se pudo leer el archivo .lna");
-
-    let mut lexer = Lexer::new(&contents);
-    let tokens = lexer.tokenize();
-
-    let mut parser = Parser::new(tokens);
-    let ast = parser.parse().expect("❌ Error al parsear el código");
-
-    let mut interpreter = Interpreter::new();
-    interpreter.interpret(ast);
-}
-
-fn run_repl() {
-    let mut interpreter = Interpreter::new();
-
-    loop {
-        print!("🌙> ");
-        io::stdout().flush().unwrap();
-
-        let mut input = String::new();
-        if io::stdin().read_line(&mut input).is_err() {
-            println!("❌ Error al leer la entrada.");
-            continue;
-        }
-
-        if input.trim().is_empty() {
-            continue;
-        }
-
-        let mut lexer = Lexer::new(&input);
-        let tokens = lexer.tokenize();
-
-        let mut parser = Parser::new(tokens);
-        match parser.parse() {
-            Ok(ast) => interpreter.interpret(ast),
-            Err(e) => println!("❌ Error: {}", e),
-        }
-    }
-}
+use crate::grimoire::Grimoire;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
+    let target_file = args.get(1).cloned().unwrap_or("main.lna".to_string());
 
-    if args.len() > 1 {
-        let filename = &args[1];
-        run_file(filename);
-    } else {
-        run_repl();
+    match fs::read_to_string(&target_file) {
+        Ok(code) => {
+            if code.trim().is_empty() {
+                println!("🌑 El grimorio está en blanco... nada que conjurar.");
+            } else {
+                let mut lexer = Lexer::new(&code);
+                let tokens = lexer.tokenize();
+
+                let mut parser = Parser::new(tokens);
+                match parser.parse() {
+                    Ok(ast) => {
+                        let mut interpreter = Interpreter::new();
+                        interpreter.interpret(ast);
+                    }
+                    Err(e) => {
+                        println!("❌ Error al interpretar '{}': {}", target_file, e);
+                    }
+                }
+            }
+        }
+        Err(_) => {
+            println!("⚠️ No se pudo encontrar '{}'.", target_file);
+        }
+    }
+
+    // Inicia REPL solo si no se proporcionó un archivo
+    if args.get(1).is_none() {
+        println!("\n🌙 Welcome to Lunaria REPL");
+        println!("Type 'exit()' to leave the universe.\n");
+        // Start the repl environment
+        repl::start_repl(Grimoire::new());
     }
 }

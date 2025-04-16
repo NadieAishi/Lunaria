@@ -1,24 +1,5 @@
-#![allow(dead_code)]
-#![allow(unused_variables)]
-#![allow(unused_imports)]
-#![allow(unreachable_patterns)]
-
-
 use crate::lexer::Token;
-
-#[derive(Debug, Clone)]
-pub enum Expr {
-    Identifier(String),
-    String(String),
-    Call {
-        name: String,
-        args: Vec<Expr>,
-    },
-    Assignment {
-        name: String,
-        value: Box<Expr>,
-    },
-}
+use crate::ast::Expr;
 
 pub struct Parser {
     tokens: Vec<Token>,
@@ -44,108 +25,364 @@ impl Parser {
         self.tokens.get(self.position)
     }
 
+    fn parse_assignment(&mut self) -> Result<Expr, String> {
+        let mut mutable = false;
+        if matches!(self.peek(), Some(Token::Keyword(k)) if k == "mut") {
+            self.advance();
+            mutable = true;
+        }
+    
+        let name = if let Some(Token::Identifier(id)) = self.advance() {
+            id.clone()
+        } else {
+            return Err("❌ Expected identifier after 'define'".to_string());
+        };
+    
+        if !matches!(self.advance(), Some(Token::Symbol(s)) if s == "::") {
+            return Err("❌ Expected '::' after identifier".to_string());
+        }
+    
+        let type_hint = if let Some(Token::Identifier(t)) = self.advance() {
+            Some(t.clone())
+        } else {
+            return Err("❌ Expected type after '::'".to_string());
+        };
+    
+        if !matches!(self.advance(), Some(Token::Operator(op)) if op == ":=") {
+            return Err("❌ Expected ':=' after type".to_string());
+        }
+    
+        // 💡 Aquí permitimos parsear expresiones completas (incluyendo llamadas a funciones)
+        let value = self.parse_expression()?;
+    
+        if matches!(self.peek(), Some(Token::Symbol(s)) if s == ";") {
+            self.advance();
+        }
+    
+        Ok(Expr::Assignment {
+            name,
+            value: Box::new(value),
+            type_hint,
+            mutable,
+        })
+    }
+    
+
     pub fn parse(&mut self) -> Result<Vec<Expr>, String> {
         let mut expressions = Vec::new();
 
         while self.position < self.tokens.len() {
-            // println!("🧩 Analizando token: {:?}", self.tokens.get(self.position));
-
             match self.tokens.get(self.position) {
-                Some(Token::Keyword(keyword)) if keyword == "define" => {
-                    // println!("📌 Encontrado: define");
-                    self.advance(); // consume 'define'
-
-                    let name = if let Some(Token::Identifier(id)) = self.tokens.get(self.position) {
-                        let id = id.clone();
-                        self.advance();
-                        id
-                    } else {
-                        return Err("❌ Expected identifier after 'define'".to_string());
-                    };
-
-                    if !matches!(self.tokens.get(self.position), Some(Token::Symbol(s)) if s == "::") {
-                        return Err("❌ Expected '::' after identifier".to_string());
-                    }
-                    self.advance();
-
-                    if matches!(self.tokens.get(self.position), Some(Token::Identifier(_))) {
-                        self.advance(); // skip type
-                    } else {
-                        return Err("❌ Expected type after '::'".to_string());
-                    }
-
-                    if !matches!(self.tokens.get(self.position), Some(Token::Operator(op)) if op == ":=") {
-                        return Err("❌ Expected ':=' after type".to_string());
-                    }
-                    self.advance();
-
-                    if let Some(Token::String(value)) = self.tokens.get(self.position) {
-                        let value = value.clone();
-                        self.advance();
-                        // println!("📦 Asignación de valor: {value}");
-                        expressions.push(Expr::Assignment {
-                            name,
-                            value: Box::new(Expr::String(value)),
-                        });
-                    } else {
-                        return Err("❌ Expected string value after ':='".to_string());
-                    }
+                Some(Token::Keyword(kw)) if kw == "fn" => {
+                    let func = self.parse_single_function()?;
+                    expressions.push(func);
                 }
-
-                Some(Token::Identifier(id)) => {
-                    println!("⚙️ Llamada potencial: {id}");
-                    let name = id.clone();
+                Some(Token::Keyword(kw)) if kw == "summon" => {
                     self.advance();
-
-                    if matches!(self.tokens.get(self.position), Some(Token::Symbol(s)) if s == ".") {
-                        self.advance();
-                        if let Some(Token::Identifier(method)) = self.tokens.get(self.position) {
-                            let call_name = format!("{}.{}", name, method);
-                            self.advance();
-
-                            if !matches!(self.tokens.get(self.position), Some(Token::Symbol(s)) if s == "(") {
-                                return Err("❌ Expected '(' after method name".to_string());
+                
+                    let name = if let Some(Token::Identifier(id)) = self.advance() {
+                        id.clone()
+                    } else {
+                        return Err("❌ Expected module name after 'summon'".to_string());
+                    };
+                
+                    if !matches!(self.advance(), Some(Token::Symbol(s)) if s == "{") {
+                        return Err("❌ Expected '{{' to start module body".to_string());
+                    }
+                
+                    let mut body = Vec::new();
+                
+                    while !matches!(self.peek(), Some(Token::Symbol(s)) if s == "}") {
+                        if matches!(self.peek(), Some(Token::Keyword(k)) if k == "fn") {
+                            self.advance(); // consume 'fn'
+                
+                            let fname = if let Some(Token::Identifier(id)) = self.advance() {
+                                id.clone()
+                            } else {
+                                return Err("❌ Expected function name".to_string());
+                            };
+                
+                            if !matches!(self.advance(), Some(Token::Symbol(s)) if s == "(") {
+                                return Err("❌ Expected '(' after function name".to_string());
                             }
-                            self.advance();
-
-                            let mut args = Vec::new();
-                            while !matches!(self.tokens.get(self.position), Some(Token::Symbol(s)) if s == ")") {
-                                match self.tokens.get(self.position) {
-                                    Some(Token::String(s)) => {
-                                        println!("📨 Argumento string: {s}");
-                                        args.push(Expr::String(s.clone()));
-                                        self.advance();
-                                    }
-                                    Some(Token::Identifier(id)) => {
-                                        println!("📨 Argumento identificador: {id}");
-                                        args.push(Expr::Identifier(id.clone()));
-                                        self.advance();
-                                    }
-                                    _ => break,
+                
+                            let mut params = Vec::new();
+                            while !matches!(self.peek(), Some(Token::Symbol(s)) if s == ")") {
+                                let param_name = if let Some(Token::Identifier(id)) = self.advance() {
+                                    id.clone()
+                                } else {
+                                    return Err("❌ Expected parameter name".to_string());
+                                };
+                
+                                if !matches!(self.advance(), Some(Token::Symbol(s)) if s == "::") {
+                                    return Err("❌ Expected '::' after parameter name".to_string());
                                 }
-
-                                if matches!(self.tokens.get(self.position), Some(Token::Symbol(s)) if s == ",") {
-                                    self.advance(); // skip comma
+                
+                                let param_type = if let Some(Token::Identifier(typ)) = self.advance() {
+                                    typ.clone()
+                                } else {
+                                    return Err("❌ Expected parameter type".to_string());
+                                };
+                
+                                params.push((param_name, param_type));
+                
+                                if matches!(self.peek(), Some(Token::Symbol(s)) if s == ",") {
+                                    self.advance();
                                 }
                             }
-
-                            self.advance(); // skip ')'
-                            // println!("📞 Generando llamada a función: {call_name}");
-                            expressions.push(Expr::Call {
-                                name: call_name,
-                                args,
+                
+                            self.advance(); // consume ')'
+                
+                            if !matches!(self.advance(), Some(Token::Operator(op)) if op == "->") {
+                                return Err("❌ Expected '->' after parameters".to_string());
+                            }
+                
+                            let return_type = if let Some(Token::Identifier(rt)) = self.advance() {
+                                rt.clone()
+                            } else {
+                                return Err("❌ Expected return type".to_string());
+                            };
+                
+                            if !matches!(self.advance(), Some(Token::Symbol(s)) if s == "{") {
+                                return Err("❌ Expected '{{' to start function body".to_string());
+                            }
+                
+                            let mut func_body = Vec::new();
+                            while !matches!(self.peek(), Some(Token::Symbol(s)) if s == "}") {
+                                let expr = self.parse_expression()?;
+                                if !matches!(expr, Expr::Empty) {
+                                    func_body.push(expr);
+                                }
+                            }
+                
+                            self.advance(); // consume '}'
+                
+                            body.push(Expr::FunctionDef {
+                                name: fname,
+                                params,
+                                return_type,
+                                body: func_body,
                             });
+                        } else {
+                            let expr = self.parse_expression()?;
+                            if !matches!(expr, Expr::Empty) {
+                                println!("⚠️ Ignorado en módulo '{}': {:?}", name, expr);
+                            }
                         }
                     }
+                
+                    self.advance(); // consume '}'
+                    expressions.push(Expr::ModuleDef { name, body });
+                }
+                
+//
+
+                Some(Token::Keyword(kw)) if kw == "evoke" => {
+                    self.advance();
+
+                    let module_name = if let Some(Token::Identifier(id)) = self.advance() {
+                        id.clone()
+                    } else {
+                        return Err("❌ Expected module name after 'evoke'".to_string());
+                    };
+
+                    if matches!(self.peek(), Some(Token::Symbol(s)) if s == ";") {
+                        self.advance();
+                    }
+
+                    expressions.push(Expr::ModuleImport(module_name));
+                }
+
+                Some(Token::Keyword(kw)) if kw == "define" => {
+                    self.advance();
+                    let assignment = self.parse_assignment()?;
+                    expressions.push(assignment);
                 }
 
                 _ => {
-                    // println!("⚠️ Token ignorado");
-                    self.advance();
+                    let expr = self.parse_expression()?;
+                    expressions.push(expr);
                 }
             }
         }
 
         Ok(expressions)
+    }
+
+    fn parse_expression(&mut self) -> Result<Expr, String> {
+        match self.tokens.get(self.position) {
+            Some(Token::Keyword(kw)) if kw == "return" => {
+                self.advance(); // consume 'return'
+
+                if matches!(self.peek(), Some(Token::Symbol(s)) if s == ";") {
+                    self.advance();
+                    return Ok(Expr::Return(Box::new(Expr::Empty)));
+                }
+
+                let expr = self.parse_expression()?;
+                Ok(Expr::Return(Box::new(expr)))
+            }
+
+            Some(Token::Identifier(first)) => {
+                let mut name = first.clone();
+                self.advance();
+
+                while let Some(Token::Symbol(dot)) = self.peek() {
+                    if dot == "." {
+                        self.advance(); // consume '.'
+
+                        match self.peek() {
+                            Some(Token::Identifier(next)) => {
+                                let next = next.clone();
+                                self.advance(); // consume identifier
+                                name = format!("{}.{}", name, next);
+                            }
+                            other => {
+                                return Err(format!(
+                                    "❌ Expected identifier after '.', found: {:?}",
+                                    other
+                                ));
+                            }
+                        }
+                    } else {
+                        break;
+                    }
+                }
+
+                if matches!(self.peek(), Some(Token::Symbol(s)) if s == "(") {
+                    self.advance();
+                    let mut args = Vec::new();
+                    while !matches!(self.peek(), Some(Token::Symbol(s)) if s == ")") {
+                        match self.peek() {
+                            Some(Token::String(s)) => {
+                                args.push(Expr::String(s.clone()));
+                                self.advance();
+                            }
+                            Some(Token::Identifier(id)) => {
+                                args.push(Expr::Identifier(id.clone()));
+                                self.advance();
+                            }
+                            Some(Token::Number(n)) => {
+                                args.push(Expr::Number(*n));
+                                self.advance();
+                            }
+                            Some(Token::Boolean(b)) => {
+                                args.push(Expr::Boolean(*b));
+                                self.advance();
+                            }
+                            _ => break,
+                        }
+
+                        if matches!(self.peek(), Some(Token::Symbol(s)) if s == ",") {
+                            self.advance();
+                        }
+                    }
+                    self.advance(); // consume ')'
+                   return Ok(Expr::FunctionCall { name, args })
+                
+                }
+                // Comprobar si hay acceso con corchetes: agenda["Juan"]
+if matches!(self.peek(), Some(Token::Symbol(s)) if s == "[") {
+    self.advance(); // consume '['
+
+    let key_expr = match self.advance() {
+        Some(Token::String(s)) => Expr::String(s.clone()),
+        Some(Token::Identifier(id)) => Expr::Identifier(id.clone()),
+        other => return Err(format!("❌ Expected string or identifier as map key, found: {:?}", other)),
+    };
+
+    if !matches!(self.advance(), Some(Token::Symbol(s)) if s == "]") {
+        return Err("❌ Expected ']' after map key".to_string());
+    }
+
+    return Ok(Expr::MapAccess {
+        map: Box::new(Expr::Identifier(name)),
+        key: Box::new(key_expr),
+    });
+}
+                else {
+                    Ok(Expr::Identifier(name))
+                }
+            }
+
+            _ => {
+                self.advance();
+                Ok(Expr::Empty)
+            }
+        }
+    }
+
+    // ✅ Función auxiliar: parsea una única función sin recursión infinita
+    fn parse_single_function(&mut self) -> Result<Expr, String> {
+        self.advance(); // consume 'fn'
+
+        let name = if let Some(Token::Identifier(id)) = self.advance() {
+            id.clone()
+        } else {
+            return Err("❌ Expected function name".to_string());
+        };
+
+        if !matches!(self.advance(), Some(Token::Symbol(s)) if s == "(") {
+            return Err("❌ Expected '(' after function name".to_string());
+        }
+
+        let mut params = Vec::new();
+        while !matches!(self.peek(), Some(Token::Symbol(s)) if s == ")") {
+            let param_name = if let Some(Token::Identifier(id)) = self.advance() {
+                id.clone()
+            } else {
+                return Err("❌ Expected parameter name".to_string());
+            };
+
+            if !matches!(self.advance(), Some(Token::Symbol(s)) if s == "::") {
+                return Err("❌ Expected '::' after parameter name".to_string());
+            }
+
+            let param_type = if let Some(Token::Identifier(typ)) = self.advance() {
+                typ.clone()
+            } else {
+                return Err("❌ Expected parameter type".to_string());
+            };
+
+            params.push((param_name, param_type));
+
+            if matches!(self.peek(), Some(Token::Symbol(s)) if s == ",") {
+                self.advance();
+            }
+        }
+
+        self.advance(); // consume ')'
+
+        if !matches!(self.advance(), Some(Token::Operator(op)) if op == "->") {
+            return Err("❌ Expected '->' after parameters".to_string());
+        }
+
+        let return_type = if let Some(Token::Identifier(rt)) = self.advance() {
+            rt.clone()
+        } else {
+            return Err("❌ Expected return type".to_string());
+        };
+
+        if !matches!(self.advance(), Some(Token::Symbol(s)) if s == "{") {
+            return Err("❌ Expected '{' to start function body".to_string());
+        }
+
+        let mut body = Vec::new();
+        while !matches!(self.peek(), Some(Token::Symbol(s)) if s == "}") {
+            if self.peek().is_none() {
+                return Err("❌ Unexpected end of function body".to_string());
+            }
+            let expr = self.parse_expression()?;
+            body.push(expr);
+        }
+
+        self.advance(); // consume '}'
+
+        Ok(Expr::FunctionDef {
+            name,
+            params,
+            return_type,
+            body,
+        })
     }
 }
