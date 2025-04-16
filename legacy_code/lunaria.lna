@@ -1,0 +1,311 @@
+define lexer::Text := "
+#[derive(Debug, Clone)]
+pub enum Token {
+    Identifier(String),
+    Keyword(String),
+    Symbol(String),
+    Operator(String),
+    String(String),
+}
+";
+
+define parser::Text := "
+use crate::lexer::Token;
+
+#[derive(Debug, Clone)]
+pub enum Expr {
+    Assignment { name: String, value: Box<Expr> },
+    Call { name: String, args: Vec<Expr> },
+    Identifier(String),
+    String(String),
+}
+
+pub struct Parser {
+    tokens: Vec<Token>,
+    pos: usize,
+}
+
+impl Parser {
+    pub fn new(tokens: Vec<Token>) -> Self {
+        Self { tokens, pos: 0 }
+    }
+
+    fn peek(&self) -> Option<&Token> {
+        self.tokens.get(self.pos)
+    }
+
+    pub fn parse(&mut self) -> Vec<Expr> {
+        let mut expressions = Vec::new();
+        while self.pos < self.tokens.len() {
+            if let Some(expr) = self.parse_expr() {
+                expressions.push(expr);
+            } else {
+                break;
+            }
+        }
+        expressions
+    }
+
+    fn parse_expr(&mut self) -> Option<Expr> {
+        match self.tokens.get(self.pos)? {
+            Token::Keyword(kw) if kw == \"define\" => {
+                self.pos += 1;
+                let name = match self.tokens.get(self.pos)? {
+                    Token::Identifier(n) => n.clone(),
+                    _ => return None,
+                };
+                self.pos += 1;
+                if let Token::Symbol(s) = self.tokens.get(self.pos)? {
+                    if s != \"::\" {
+                        return None;
+                    }
+                }
+                self.pos += 1;
+                let _type = self.tokens.get(self.pos)?;
+                self.pos += 1;
+                if let Token::Operator(op) = self.tokens.get(self.pos)? {
+                    if op != \":=\" {
+                        return None;
+                    }
+                }
+                self.pos += 1;
+                if let Some(Token::String(value)) = self.tokens.get(self.pos) {
+                    self.pos += 1;
+                    Some(Expr::Assignment {
+                        name,
+                        value: Box::new(Expr::String(value.clone())),
+                    })
+                } else {
+                    None
+                }
+            }
+
+            Token::Identifier(ident) => {
+                let name = ident.clone();
+                self.pos += 1;
+                if let Some(Token::Symbol(s)) = self.tokens.get(self.pos) {
+                    if s == \".\" {
+                        self.pos += 1;
+                        if let Some(Token::Identifier(method)) = self.tokens.get(self.pos) {
+                            let mut args = Vec::new();
+                            self.pos += 1;
+                            if let Some(Token::Symbol(paren)) = self.tokens.get(self.pos) {
+                                if paren == \"(\" {
+                                    self.pos += 1;
+                                    while let Some(token) = self.tokens.get(self.pos) {
+                                        match token {
+                                            Token::String(s) => {
+                                                args.push(Expr::String(s.clone()));
+                                            }
+                                            Token::Identifier(i) => {
+                                                args.push(Expr::Identifier(i.clone()));
+                                            }
+                                            _ => {}
+                                        }
+                                        self.pos += 1;
+                                        if let Some(Token::Symbol(s)) = self.tokens.get(self.pos) {
+                                            if s == \",\" {
+                                                self.pos += 1;
+                                                continue;
+                                            } else if s == \")\" {
+                                                self.pos += 1;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    return Some(Expr::Call {
+                                        name: format!(\"{}.{}\", name, method),
+                                        args,
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+                Some(Expr::Identifier(name))
+            }
+
+            Token::String(s) => {
+                self.pos += 1;
+                Some(Expr::String(s.clone()))
+            }
+
+            _ => None,
+        }
+    }
+}
+";
+
+define interpreter::Text := "
+use std::collections::HashMap;
+use std::fs::{create_dir_all, File};
+use std::io::Write;
+use std::process::Command;
+use crate::parser::Expr;
+
+pub struct Interpreter {
+    pub env: HashMap<String, Expr>,
+}
+
+impl Interpreter {
+    pub fn new() -> Self {
+        Self { env: HashMap::new() }
+    }
+
+    pub fn interpret(&mut self, expressions: Vec<Expr>) {
+        for expr in expressions {
+            match expr.clone() {
+                Expr::Assignment { name, value } => {
+                    self.env.insert(name, *value);
+                }
+
+                Expr::Call { name, args } => {
+                    if name == \"fs.out\" && args.len() == 2 {
+                        if let (Expr::String(path), Expr::Identifier(var_name)) = (&args[0], &args[1]) {
+                            if let Some(Expr::String(content)) = self.env.get(var_name) {
+                                if let Some(folder) = std::path::Path::new(path).parent() {
+                                    let _ = create_dir_all(folder);
+                                    println!(\"📁 Carpeta creada: {}\", folder.display());
+                                }
+                                let mut file = File::create(path).unwrap();
+                                file.write_all(content.as_bytes()).unwrap();
+                                println!(\"📝 Writing file to: {}\", path);
+                            }
+                        }
+                    }
+
+                    if name == \"console.out\" && args.len() == 1 {
+                        if let Expr::String(text) = &args[0] {
+                            println!(\"{}\", text);
+                        }
+                    }
+
+                    if name == \"shell.run\" && args.len() == 1 {
+                        if let Expr::String(cmd) = &args[0] {
+                            println!(\"💻 Running command: {}\", cmd);
+
+                            #[cfg(target_os = \"windows\")]
+                            let output = Command::new(\"cmd\")
+                                .args([\"/C\", cmd])
+                                .output();
+
+                            #[cfg(not(target_os = \"windows\"))]
+                            let output = Command::new(\"sh\")
+                                .args([\"-c\", cmd])
+                                .output();
+
+                            match output {
+                                Ok(output) => {
+                                    let stdout = String::from_utf8_lossy(&output.stdout);
+                                    let stderr = String::from_utf8_lossy(&output.stderr);
+                                    if !stdout.trim().is_empty() {
+                                        println!(\"📤 Output:\\n{}\", stdout.trim());
+                                    }
+                                    if !stderr.trim().is_empty() {
+                                        println!(\"⚠️ Error:\\n{}\", stderr.trim());
+                                    }
+                                }
+                                Err(e) => {
+                                    println!(\"⚠️ Error:\\n{}\", e);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Expr::Identifier(_) => {} // Ignorar identificadores sueltos
+                Expr::String(_) => {}     // Ignorar strings sueltos
+
+                _ => {}
+            }
+        }
+    }
+}
+";
+
+define main::Text := "
+mod lexer;
+mod parser;
+mod interpreter;
+
+use crate::interpreter::Interpreter;
+use crate::parser::{Parser};
+use lexer::Token;
+
+fn tokenize(code: &str) -> Vec<Token> {
+    let mut tokens = Vec::new();
+    let mut chars = code.chars().peekable();
+    while let Some(c) = chars.next() {
+        match c {
+            ':' => {
+                if chars.peek() == Some(&'=') {
+                    chars.next();
+                    tokens.push(Token::Operator(\":=\".into()));
+                }
+            }
+            '(' | ')' | '.' | ',' => tokens.push(Token::Symbol(c.to_string())),
+            '\"' => {
+                let mut value = String::new();
+                while let Some(nc) = chars.next() {
+                    if nc == '\"' {
+                        break;
+                    } else {
+                        value.push(nc);
+                    }
+                }
+                tokens.push(Token::String(value));
+            }
+            c if c.is_alphanumeric() || c == '_' => {
+                let mut ident = c.to_string();
+                while let Some(&nc) = chars.peek() {
+                    if nc.is_alphanumeric() || nc == '_' {
+                        ident.push(nc);
+                        chars.next();
+                    } else {
+                        break;
+                    }
+                }
+
+                match ident.as_str() {
+                    \"define\" => tokens.push(Token::Keyword(ident)),
+                    _ => tokens.push(Token::Identifier(ident)),
+                }
+            }
+            _ => {}
+        }
+    }
+
+    tokens
+}
+
+fn main() {
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() < 2 {
+        eprintln!(\"Uso: lunaria_compiler archivo.lna\");
+        return;
+    }
+
+    let filename = &args[1];
+    let source = std::fs::read_to_string(filename).expect(\"No se pudo leer el archivo\");
+    let tokens = tokenize(&source);
+    println!(\"--- Tokens ---\");
+    for token in &tokens {
+        println!(\"{:?}\", token);
+    }
+
+    let mut parser = Parser::new(tokens);
+    let ast = parser.parse();
+    println!(\"--- AST generated ---\");
+
+    let mut interpreter = Interpreter::new();
+    interpreter.interpret(ast);
+}
+";
+
+fs.out("src/lexer.rs", lexer);
+fs.out("src/parser.rs", parser);
+fs.out("src/interpreter.rs", interpreter);
+fs.out("src/main.rs", main);
+
+console.out("🎉 Archivos base generados.");
+shell.run("cargo build");
